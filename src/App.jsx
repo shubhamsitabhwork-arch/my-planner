@@ -12,16 +12,31 @@ export default function App() {
       setUser(session?.user ?? null)
       setLoading(false)
     })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null)
+      }
+    )
+
     return () => subscription.unsubscribe()
   }, [])
 
-  if (loading) return <div style={{ display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh', color:'#aaa', fontSize:14 }}>Loading…</div>
+  if (loading) {
+    return (
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh', background:'#f5f5f5' }}>
+        <div style={{ textAlign:'center' }}>
+          <div style={{ fontSize:24, marginBottom:8 }}>📅</div>
+          <div style={{ fontSize:14, color:'#aaa' }}>Loading your planner…</div>
+        </div>
+      </div>
+    )
+  }
+
   if (!user) return <Login />
+
   return (
-    <div style={{ padding: 24, minHeight:'100vh', background:'#f5f5f5' }}>
+    <div style={{ minHeight:'100vh', background:'#f5f5f5', padding:'16px' }}>
       <Planner user={user} />
     </div>
   )

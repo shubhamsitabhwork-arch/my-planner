@@ -7,47 +7,79 @@ export default function Login() {
   const [isSignup, setIsSignup] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [isError, setIsError] = useState(false)
 
   async function handleSubmit() {
+    if (!email || !password) {
+      setIsError(true)
+      setMessage('Please enter email and password.')
+      return
+    }
     setLoading(true)
     setMessage('')
-    if (isSignup) {
-      const { error } = await supabase.auth.signUp({ email, password })
-      if (error) setMessage(error.message)
-      else setMessage('Check your email to confirm your account!')
-    } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) setMessage(error.message)
+    setIsError(false)
+
+    try {
+      if (isSignup) {
+        const { error } = await supabase.auth.signUp({ email, password })
+        if (error) { setIsError(true); setMessage(error.message) }
+        else setMessage('✓ Check your email to confirm your account!')
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) { setIsError(true); setMessage(error.message) }
+      }
+    } catch (e) {
+      setIsError(true)
+      setMessage('Network error. Check your connection.')
     }
     setLoading(false)
   }
 
   return (
-    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#f5f5f5' }}>
-      <div style={{ background:'#fff', borderRadius:12, padding:'32px 28px', width:320, boxShadow:'0 2px 16px rgba(0,0,0,0.08)' }}>
-        <h2 style={{ fontSize:20, fontWeight:600, marginBottom:4 }}>My Planner</h2>
-        <p style={{ fontSize:13, color:'#888', marginBottom:24 }}>{isSignup ? 'Create your account' : 'Sign in to sync your data'}</p>
+    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#f5f5f5', padding:16 }}>
+      <div style={{ background:'#fff', borderRadius:16, padding:'32px 24px', width:'100%', maxWidth:340, boxShadow:'0 4px 24px rgba(0,0,0,0.08)' }}>
+        <div style={{ textAlign:'center', marginBottom:24 }}>
+          <div style={{ fontSize:36, marginBottom:8 }}>📅</div>
+          <h2 style={{ fontSize:22, fontWeight:600, color:'#1a1a1a', marginBottom:4 }}>My Planner</h2>
+          <p style={{ fontSize:13, color:'#999' }}>{isSignup ? 'Create your account' : 'Sign in to sync your data'}</p>
+        </div>
+
         <input
-          type="email" placeholder="Email" value={email}
+          type="email"
+          placeholder="Email address"
+          value={email}
           onChange={e => setEmail(e.target.value)}
-          style={{ width:'100%', padding:'9px 12px', border:'1px solid #e0e0e0', borderRadius:7, fontSize:14, marginBottom:10, outline:'none' }}
+          style={{ width:'100%', padding:'11px 14px', border:'1.5px solid #e8e8e8', borderRadius:8, fontSize:14, marginBottom:10, outline:'none', color:'#333', background:'#fafafa' }}
         />
         <input
-          type="password" placeholder="Password" value={password}
+          type="password"
+          placeholder="Password"
+          value={password}
           onChange={e => setPassword(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-          style={{ width:'100%', padding:'9px 12px', border:'1px solid #e0e0e0', borderRadius:7, fontSize:14, marginBottom:16, outline:'none' }}
+          style={{ width:'100%', padding:'11px 14px', border:'1.5px solid #e8e8e8', borderRadius:8, fontSize:14, marginBottom:16, outline:'none', color:'#333', background:'#fafafa' }}
         />
+
         <button
-          onClick={handleSubmit} disabled={loading}
-          style={{ width:'100%', padding:'10px', background:'#4F7EFF', color:'#fff', border:'none', borderRadius:7, fontSize:14, fontWeight:500, marginBottom:12 }}
+          onClick={handleSubmit}
+          disabled={loading}
+          style={{ width:'100%', padding:'12px', background: loading ? '#a0b4ff' : '#4F7EFF', color:'#fff', border:'none', borderRadius:8, fontSize:15, fontWeight:600, marginBottom:12, transition:'background 0.2s' }}
         >
           {loading ? 'Please wait…' : isSignup ? 'Create Account' : 'Sign In'}
         </button>
-        {message && <p style={{ fontSize:12, color: message.includes('Check') ? 'green' : 'red', marginBottom:10 }}>{message}</p>}
-        <p style={{ fontSize:12, color:'#888', textAlign:'center' }}>
+
+        {message && (
+          <div style={{ fontSize:12, color: isError ? '#e53e3e' : '#38a169', marginBottom:12, padding:'8px 12px', background: isError ? '#fff5f5' : '#f0fff4', borderRadius:6, textAlign:'center' }}>
+            {message}
+          </div>
+        )}
+
+        <p style={{ fontSize:13, color:'#999', textAlign:'center' }}>
           {isSignup ? 'Already have an account? ' : "Don't have an account? "}
-          <span onClick={() => setIsSignup(!isSignup)} style={{ color:'#4F7EFF', cursor:'pointer' }}>
+          <span
+            onClick={() => { setIsSignup(!isSignup); setMessage('') }}
+            style={{ color:'#4F7EFF', cursor:'pointer', fontWeight:500 }}
+          >
             {isSignup ? 'Sign in' : 'Sign up'}
           </span>
         </p>
